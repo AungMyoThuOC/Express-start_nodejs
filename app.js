@@ -6,6 +6,7 @@ const tourRouter = require("./routers/tourRoute");
 const userRouter = require("./routers/userRoute");
 const myLogger = require("./middleware/logger");
 const reqTime = require("./middleware/reqTime");
+const bookRouter = require("./routers/bookRoute");
 
 
 
@@ -21,5 +22,6 @@ app.get("/", (req, res) => {
 
 app.use("/api/v1/tours", tourRouter);
 app.use("/api/v1/users", userRouter);
+app.use("/api/v1/books", bookRouter);
 
 module.exports = app;

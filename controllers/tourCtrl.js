@@ -6,10 +6,44 @@ const Tour = require("../models/tourModel");
 
 
 exports.getAllTours = async (req, res) => {
+  // 1. Filtering
+  // console.log(req.query);
+  // const tours = await Tour.find(req.query);
   try {
-    const tours = await Tour.find();
+    console.log(req.query);
+    // 1.1 Remove Unwanted Query e.g., page, sort, fields, limit
+    const queryObj = {...req.query};
+    const excludeFields = ["page", "sort", "limit", "fields"];
+    excludeFields.forEach((el) => delete queryObj[el]);
+
+    console.log(req.query, queryObj);
+    // const tours = await Tour.find(queryObj);
+
+    //1.2 Advance Filtering
+    let queryStr = JSON.stringify(queryObj);
+    queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
+    console.log(JSON.parse(queryStr));
+
+    // query build => Select * from tours where dration =5
+    let query = Tour.find(JSON.parse(queryStr));
+
+    // 2 Sorting
+    if (req.query.sort) {
+      // sorting
+      // query = query.sort(req.query.sort); // query => Select * form tours where duration =5 order by price , duration
+      //2.1 Multiple Sorting
+      const sortBy = req.query.sort.split(",").join(" ");
+      console.log(sortBy);
+      query = query.sort(sortBy);
+    } else {
+      query = query.sort("-createdAt");
+    }
+
+    const tours = await query;
+
     res.status(200).json({
       status: "success",
+      length: tours.length,
       tours: tours,
     });
   } catch (err) {
@@ -32,7 +66,8 @@ exports.getOneTour = async (req, res) => {
   } catch (err) {
     res.status(400).json({
       status: 'fail',
-      message: 'Invalid ID',
+      message: 'Something went wrong',
+      error: err,
     });
   }
   // console.log(req.params);
@@ -59,21 +94,20 @@ exports.getOneTour = async (req, res) => {
 };
 
 exports.addNewTours = async (req, res) => {
-try {
-  const newTour = await Tour.create(req.body);
-
-  res.status(200).json({
-    status: "Success",
-    message: "Tour has been added successfully.",
-    tour : newTour
-  });
-} catch (err) {
-  console.log(err);
-  res.status(401).json ({
-    status: "fail",
-    message: `${err.message} ${err.name}`,
-  });
-}
+  try {
+    const newTour = await Tour.create(req.body);
+    res.status(200).json({
+      status: "success",
+      message: "Tour has been added successfully.",
+      tour: newTour,
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(401).json({
+      status: "fail",
+      message: `${err.message} ${err.name}`,
+    });
+  }
   // console.log(req.body);
   // const newTour = req.body;
 
@@ -100,20 +134,21 @@ try {
 };
 
 exports.updateOneTour = async (req, res) => {
-  const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-    runValidators: true,
-  });
   try {
+    const newTour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+    });
+
     res.status(200).json({
       status: 'success',
       message: "Tour has been updated successfully.",
-      tour,
+      tour: newTour,
     });
   } catch (err) {
-    res.status(404).json({
+    res.status(401).json({
       status: 'fail',
-      message: err,
+      message: "Something went wrong",
+      error: err,
     });
   }
   // console.log(req.body);
@@ -155,15 +190,14 @@ exports.updateOneTour = async (req, res) => {
 exports.deleteOneTour = async (req, res) => {
   try {
     await Tour.findByIdAndDelete(req.params.id);
-    res.status(200).json({
+    res.status(204).json({
       status: "Success",
-      data: null,
       message: "Tour has been deleted successfully.",
     });
   } catch (err) {
-    res.status(404).json({
+    res.status(400).json({
       status: 'fail',
-      message: err,
+      message: "Error whild deleting tour",
     });
   }
   // console.log(req.body);
@@ -207,7 +241,19 @@ exports.deleteOneTour = async (req, res) => {
   // });
 };
 
-exports.deleteAllTour = (req, res) => {
+exports.deleteAllTour = async (req, res) => {
+  try {
+    await Tour.deleteMany();
+    res.status(204).json({
+      status: "Success",
+      message: "Tour has been deleted successfully.",
+    });
+  } catch (err) {
+    res.status(400).json({
+      status: 'fail',
+      message: "Error whild deleting tour",
+    });
+  }
   // tour = [];
 
   // fs.writeFile(

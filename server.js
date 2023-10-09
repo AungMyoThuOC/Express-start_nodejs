@@ -7,32 +7,20 @@ dotenv.config({
   path: "./config.env",
 });
 
-const port = process.env.PORT;
-if (process.env.NODE_ENV == "devlopment") {
-  app.use(morgan("tiny"));
-}
-
 var dbpass = process.env.DB_PASSWORD;
 
 mongodbUrl = `mongodb+srv://aungmyothu:${dbpass}@newmorningtour.hpz6puv.mongodb.net/`;
 
-mongoose.connect(mongodbUrl).then((con) => {
-  console.log("DB connection Successful.");
-});
+mongoose
+  .connect(mongodbUrl)
+  .then((con) => {
+    console.log("DB connection Successful.");
+  })
+  .catch((err) => {
+    console.log("Error");
+  });
 
-
-
-// // DATA OBJECT
-// const testTour = new Tour({
-//   name: "Mandalay",
-//   rating: 5,
-//   price: 500,
-// });
-
-// testTour
-//   .save()
-//   .then((doc) => console.log(">>>>>>", doc))
-//   .catch((err) => console.log("ERROR", err));
+const port = process.env.PORT;
 
 console.log(process.env.NODE_ENV);
 

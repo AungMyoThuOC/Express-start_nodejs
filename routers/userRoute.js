@@ -6,7 +6,7 @@ const userRouter = express.Router();
 userRouter
     .route("/")
     .get(userCtrl.getAllUser)
-    .delete(userCtrl.deleteAllUser)
+    .delete(userCtrl.deleteAllUser);
 
 userRouter
     .route("/:id")

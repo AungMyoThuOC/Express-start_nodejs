@@ -7,7 +7,7 @@ tourRouter
   .route("/")
   .get(tourCtrl.getAllTours)
   .delete(tourCtrl.deleteAllTour)
-  .post(tourCtrl.checkBody, tourCtrl.addNewTours);
+  .post(tourCtrl.addNewTours, tourCtrl.checkBody);
 
 
 
